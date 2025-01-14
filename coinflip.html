@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Coin Flip</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Garamond:wght@700&display=swap">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: gold;
+            font-family: 'Garamond', serif;
+            position: relative;
+        }
+        #coin {
+            width: 300px; /* Increased coin size */
+            height: 300px; /* Increased coin size */
+            background-image: url('black coin.webp'); /* Default to heads icon */
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            position: absolute;
+            top: 20%; /* Adjusted position */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 1s;
+            z-index: 2; /* Ensure coin is above other elements */
+        }
+        #coin.flip {
+            transform: translate(-50%, -50%) rotateY(360deg);
+        }
+        #amount-input, #side-select, #flip-button {
+            display: block;
+            margin: 10px auto;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid gold;
+            border-radius: 10px;
+            background: black;
+            color: gold;
+            width: 250px;
+            text-align: center;
+            z-index: 1; /* Ensure inputs are below the coin */
+        }
+        #flip-button {
+            background-color: gold;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+        #flip-button:hover {
+            background-color: #d4af37;
+        }
+        #result, #earnings {
+            margin-top: 10px;
+            font-size: 20px;
+            text-align: center;
+            color: gold;
+        }
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: gold;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        #popup.show {
+            display: block;
+        }
+        #popup p {
+            margin: 0;
+        }
+        .sparkles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .sparkle {
+            width: 10px; /* Decreased sparkle size */
+            height: 10px; /* Decreased sparkle size */
+            background: radial-gradient(circle, gold, transparent);
+            position: absolute;
+            border-radius: 50%;
+            animation: sparkle 1s infinite;
+            opacity: 0.6; /* Less intense sparkle by default */
+        }
+        @keyframes sparkle {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .win-sparkles .sparkle {
+            animation: sparkle 0.5s infinite; /* Faster sparkle animation during win */
+            opacity: 1; /* More intense sparkle during win */
+        }
+    </style>
+</head>
+<body>
+    <div id="coin"></div>
+    <input type="number" id="amount-input" placeholder="Enter Amount" value="1000">
+    <select id="side-select">
+        <option value="heads">Heads</option>
+        <option value="tails">Tails</option>
+    </select>
+    <button id="flip-button" onclick="handleFlip()">Flip Coin</button>
+    <div id="earnings">Current Earnings: <span id="current-earnings">1000</span> Tokens</div>
+    <div id="popup">
+        <p id="popup-message"></p>
+    </div>
+    <div class="sparkles" id="sparkles"></div>
+    <audio id="win-sound" src="win.mp3" preload="auto"></audio>
+    <audio id="lose-sound" src="lose.mp3" preload="auto"></audio>
+    <script>
+        let currentEarnings = 1000; // Initial amount
+
+        const sparklesContainer = document.getElementById('sparkles');
+        const coin = document.getElementById('coin');
+        const popup = document.getElementById('popup');
+        const popupMessage = document.getElementById('popup-message');
+        const currentEarningsElement = document.getElementById('current-earnings');
+
+        function createSparkle(intensity = 1) {
+            for (let i = 0; i < 10 * intensity; i++) { // Fewer sparkles normally, more during win
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                sparkle.style.left = `${Math.random() * window.innerWidth}px`;
+                sparkle.style.top = `${Math.random() * window.innerHeight}px`;
+                sparklesContainer.appendChild(sparkle);
+
+                setTimeout(() => {
+                    sparklesContainer.removeChild(sparkle);
+                }, 1000);
+            }
+        }
+
+        function handleFlip() {
+            const amount = parseFloat(document.getElementById('amount-input').value);
+            const side = document.getElementById('side-select').value;
+            const win = Math.random() > 0.5; // 50/50 chance
+
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+
+            if (amount > currentEarnings) {
+                alert('You do not have enough tokens.');
+                return;
+            }
+
+            coin.classList.add('flip');
+            setTimeout(() => {
+                coin.classList.remove('flip');
+                coin.style.backgroundImage = win ? 'url("black coin HEAD.jpg")' : 'url("black coin TAIL.jpg")';
+                const result = win ? 'heads' : 'tails';
+                if (result === side) {
+                    showWinEffect();
+                    currentEarnings += amount;
+                    popupMessage.innerText = `You win! The coin landed on ${result}.`;
+                } else {
+                    document.getElementById('lose-sound').play(); // Play lose sound
+                    currentEarnings -= amount;
+                    popupMessage.innerText = `You lose! The coin landed on ${result}.`;
+                }
+                currentEarningsElement.innerText = currentEarnings;
+                popup.classList.add('show');
+                setTimeout(() => popup.classList.remove('show'), 2000);
+            }, 1000);
+        }
+
+        function showWinEffect() {
+            document.getElementById('win-sound').volume = 0.8;
+            document.getElementById('win-sound').play();
+            createSparkle(3); // Increase intensity of sparkles during win
+            sparklesContainer.classList.add('win-sparkles');
+        }
+    </script>
+</body>
+</html>

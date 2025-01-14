@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Court Login</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Garamond:wght@700&display=swap">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            background: black;
+            color: gold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            font-family: 'Garamond', serif;
+        }
+        .door {
+            width: 50%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            background: url('door.jpg') no-repeat center center;
+            background-size: cover;
+            transition: width 2s ease;
+        }
+        .door.left {
+            left: 0;
+            transform-origin: left center;
+        }
+        .door.right {
+            right: 0;
+            transform-origin: right center;
+        }
+        .login-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: 10;
+        }
+        input {
+            margin: 15px 0;
+            padding: 15px;
+            width: 250px;
+            border-radius: 10px;
+            border: 2px solid gold;
+            background: black;
+            color: gold;
+            font-size: 18px;
+        }
+        button {
+            padding: 15px 30px;
+            background-color: gold;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #d4af37;
+        }
+        .sparkles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .sparkle {
+            width: 7px;
+            height: 7px;
+            background: radial-gradient(circle, gold, transparent);
+            position: absolute;
+            border-radius: 50%;
+            animation: sparkle 2s infinite;
+            opacity: 0.8;
+        }
+        @keyframes sparkle {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.5); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="door left"></div>
+    <div class="door right"></div>
+    <div class="sparkles" id="sparkles"></div>
+    <div class="login-container">
+        <h1>Enter the Royal Court</h1>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="handleLogin()">Login</button>
+    </div>
+    <audio id="door-sound" src="sliding-door-opening-and-closing-6467.mp3" preload="auto"></audio>
+
+    <script>
+        const sparklesContainer = document.getElementById('sparkles');
+
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.classList.add('sparkle');
+            sparkle.style.left = `${Math.random() * window.innerWidth}px`;
+            sparkle.style.top = `${Math.random() * window.innerHeight}px`;
+            sparklesContainer.appendChild(sparkle);
+
+            setTimeout(() => {
+                sparklesContainer.removeChild(sparkle);
+            }, 2000);
+        }
+
+        setInterval(createSparkle, 200);
+
+        window.onload = function() {
+            setTimeout(() => {
+                document.querySelector('.door.left').style.width = '0%';
+                document.querySelector('.door.right').style.width = '0%';
+                const doorSound = document.getElementById('door-sound');
+                doorSound.volume = 0.8;
+                doorSound.play();
+                document.querySelector('.login-container').style.opacity = '1';
+            }, 1000);
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'admin' && password === 'password') {
+                window.location.href = 'coinflip.html';
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+    </script>
+</body>
+</html>
